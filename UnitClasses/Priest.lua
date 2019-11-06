@@ -190,3 +190,33 @@ function DivineStar:Compute()
         aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
     }
 end
+
+local Heal = PHD.Spell:NewWithId(2060)
+function Heal:Compute()
+    local heal = string.match(self.description, "An efficient spell that heals an ally for (%d[%d.,]*).")
+    if heal == nil then
+        return
+    end
+
+    return { heal = PHD:StrToNumber(heal) }
+end
+
+local FlashHeal = PHD.Spell:NewWithId(2061)
+function FlashHeal:Compute()
+    local heal = string.match(self.description, "A fast spell that heals an ally for (%d[%d.,]*).")
+    if heal == nil then
+        return
+    end
+
+    return { heal = PHD:StrToNumber(heal) }
+end
+
+local HolyWordSerenity = PHD.Spell:NewWithId(2050)
+function HolyWordSerenity:Compute()
+    local heal = string.match(self.description, "Perform a miracle, healing an ally for (%d[%d.,]*).")
+    if heal == nil then
+        return
+    end
+
+    return { heal = PHD:StrToNumber(heal) }
+end
