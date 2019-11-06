@@ -4,6 +4,7 @@ PHD = {}
 PHD.DEBUG = false
 
 -- should be configurable at some point
+PHD.IGNORE_STAT = -1
 PHD.AOE_AVERAGE_TARGETS = 3
 
 PHD.Spell = { descriptionMatcher = "" }
@@ -34,31 +35,31 @@ local function OnTooltipSetSpell(self)
     PHD:AddTooltipDivider()
 
     -- damage
-    if stats.dmg then PHD:AddTooltipLine("Damage: %i", stats.dmg) end
-    if stats.dot then PHD:AddTooltipLine("DoT: %i", stats.dot) end
-    if stats.instantDmg then PHD:AddTooltipLine("Instant Dmg: %i", stats.instantDmg) end
-    if stats.dps then PHD:AddTooltipLine("DpS: %i", stats.dps) end
-    if stats.dpsc then PHD:AddTooltipLine("DpSC: %i", stats.dpsc) end
-    if stats.dpm then PHD:AddTooltipLine("DpM: %1.1f", stats.dpm) end
-    if stats.aoeDps then PHD:AddTooltipLine("AoE (3p) DpS: %i", stats.aoeDps) end
-    if stats.aoeDpsc then PHD:AddTooltipLine("AoE (3p) DpSC: %i", stats.aoeDpsc) end
-    if stats.aoeDpm then PHD:AddTooltipLine("AoE (3p) DpM: %1.1f", stats.aoeDpm) end
+    if PHD:IsStatComputed(stats.dmg) then PHD:AddTooltipLine("Damage: %i", stats.dmg) end
+    if PHD:IsStatComputed(stats.dot) then PHD:AddTooltipLine("DoT: %i", stats.dot) end
+    if PHD:IsStatComputed(stats.instantDmg) then PHD:AddTooltipLine("Instant Dmg: %i", stats.instantDmg) end
+    if PHD:IsStatComputed(stats.dps) then PHD:AddTooltipLine("DpS: %i", stats.dps) end
+    if PHD:IsStatComputed(stats.dpsc) then PHD:AddTooltipLine("DpSC: %i", stats.dpsc) end
+    if PHD:IsStatComputed(stats.dpm) then PHD:AddTooltipLine("DpM: %1.1f", stats.dpm) end
+    if PHD:IsStatComputed(stats.aoeDps) then PHD:AddTooltipLine("AoE (3p) DpS: %i", stats.aoeDps) end
+    if PHD:IsStatComputed(stats.aoeDpsc) then PHD:AddTooltipLine("AoE (3p) DpSC: %i", stats.aoeDpsc) end
+    if PHD:IsStatComputed(stats.aoeDpm) then PHD:AddTooltipLine("AoE (3p) DpM: %1.1f", stats.aoeDpm) end
 
-    if stats.hps or stats.hpm then
+    if PHD:IsStatComputed(stats.hps) or PHD:IsStatComputed(stats.hpm) then
         PHD:AddTooltipDivider()
     end
 
     -- healing
-    if stats.absorb then PHD:AddTooltipLine("Absorb: %i", stats.absorb) end
-    if stats.heal then PHD:AddTooltipLine("Healing: %i", stats.heal) end
-    if stats.hot then PHD:AddTooltipLine("HoT: %i", stats.hot) end
-    if stats.postHeal then PHD:AddTooltipLine("Post Heal: %i", stats.postHeal) end
-    if stats.hps then PHD:AddTooltipLine("HpS: %i", stats.hps) end
-    if stats.hpsc then PHD:AddTooltipLine("HpSC: %i", stats.hpsc) end
-    if stats.hpm then PHD:AddTooltipLine("HpM: %1.1f", stats.hpm) end
-    if stats.aoeHps then PHD:AddTooltipLine("AoE (3p) HpS: %i", stats.aoeHps) end
-    if stats.aoeHpsc then PHD:AddTooltipLine("AoE (3p) HpSC: %i", stats.aoeHpsc) end
-    if stats.aoeHpm then PHD:AddTooltipLine("AoE (3p) HpM: %1.1f", stats.aoeHpm) end
+    if PHD:IsStatComputed(stats.absorb) then PHD:AddTooltipLine("Absorb: %i", stats.absorb) end
+    if PHD:IsStatComputed(stats.heal) then PHD:AddTooltipLine("Healing: %i", stats.heal) end
+    if PHD:IsStatComputed(stats.hot) then PHD:AddTooltipLine("HoT: %i", stats.hot) end
+    if PHD:IsStatComputed(stats.postHeal) then PHD:AddTooltipLine("Post Heal: %i", stats.postHeal) end
+    if PHD:IsStatComputed(stats.hps) then PHD:AddTooltipLine("HpS: %i", stats.hps) end
+    if PHD:IsStatComputed(stats.hpsc) then PHD:AddTooltipLine("HpSC: %i", stats.hpsc) end
+    if PHD:IsStatComputed(stats.hpm) then PHD:AddTooltipLine("HpM: %1.1f", stats.hpm) end
+    if PHD:IsStatComputed(stats.aoeHps) then PHD:AddTooltipLine("AoE (3p) HpS: %i", stats.aoeHps) end
+    if PHD:IsStatComputed(stats.aoeHpsc) then PHD:AddTooltipLine("AoE (3p) HpSC: %i", stats.aoeHpsc) end
+    if PHD:IsStatComputed(stats.aoeHpm) then PHD:AddTooltipLine("AoE (3p) HpM: %1.1f", stats.aoeHpm) end
 
     if PHD.DEBUG then
         PHD:AddTooltipDivider()
@@ -116,6 +117,10 @@ end
 function PHD:StrToNumber(str)
     local withoutComma = string.gsub(str, ",", "");
     return tonumber(withoutComma);
+end
+
+function PHD:IsStatComputed(stat)
+    return stat and stat ~= PHD.IGNORE_STAT
 end
 
 

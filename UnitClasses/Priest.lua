@@ -220,3 +220,20 @@ function HolyWordSerenity:Compute()
 
     return { heal = PHD:StrToNumber(heal) }
 end
+
+local PrayerOfMending = PHD.Spell:NewWithId(33076)
+function PrayerOfMending:Compute()
+    local heal = string.match(self.description, "that heals them for (%d[%d.,]*)")
+    if heal == nil then
+        return
+    end
+
+    heal = PHD:StrToNumber(heal)
+
+    return {
+        heal = heal,
+        hps = PHD.IGNORE_STAT,
+        hpsc = PHD.IGNORE_STAT,
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
