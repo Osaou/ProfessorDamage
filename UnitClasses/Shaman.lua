@@ -47,3 +47,30 @@ function HealingStreamTotem:Compute()
         hpsc = self:GetValPerSecondAccountForCooldown(heal, durationMs)
     }
 end
+
+local ChainHeal = PHD.Spell:NewWithId(1064)
+function ChainHeal:Compute()
+    local heal, count, effectReduction = string.match(self.description, "Heals the friendly target for (%d[%d.,]*), then jumps to heal the (%d+) most injured nearby allies. Healing is reduced by (%d+)%% with each jump")
+    if heal == nil or count == nil or effectReduction == nil then
+        return
+    end
+
+    heal = PHD:StrToNumber(heal)
+    count = PHD:StrToNumber(count)
+    effectReduction = PHD:StrToNumber(effectReduction)
+
+    local aoe = heal
+    local postJumpHeal = heal
+    local effectPreservation = 1 - (effectReduction / 100)
+
+    for jump = 1, count, 1 do
+        postJumpHeal = postJumpHeal * effectPreservation
+        aoe = aoe + postJumpHeal
+    end
+
+    return {
+        heal = heal,
+        aoeHps = self:GetValPerSecond(aoe),
+        aoeHpm = self:GetValPerMana(aoe)
+    }
+end
