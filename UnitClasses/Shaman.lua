@@ -74,3 +74,32 @@ function ChainHeal:Compute()
         aoeHpm = self:GetValPerMana(aoe)
     }
 end
+
+local HealingWave = PHD.Spell:NewWithId(77472)
+function HealingWave:Compute()
+    local heal = string.match(self.description, "restores (%d[%d.,]*) of a friendly")
+    if heal == nil then
+        return
+    end
+
+    return { heal = PHD:StrToNumber(heal) }
+end
+
+local HealingRain = PHD.Spell:NewWithId(73920)
+function HealingRain:Compute()
+    local healOverTime, targets, durationSec = string.match(self.description, "restoring (%d[%d.,]*) health to up to (%d+) allies over (%d+) sec")
+    if healOverTime == nil or targets == nil or durationSec == nil then
+        return
+    end
+
+    local hot = PHD:StrToNumber(healOverTime)
+    local durationMs = PHD:StrToNumber(durationSec) * 1000
+
+    return {
+        hot = hot,
+        hps = self:GetValPerSecond(hot, durationMs),
+        hpsc = PHD.IGNORE_STAT,
+        aoeHps = self:GetValPerSecond(hot * PHD.AOE_AVERAGE_TARGETS, durationMs),
+        aoeHpm = self:GetValPerMana(hot * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
