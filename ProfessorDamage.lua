@@ -68,6 +68,7 @@ local function OnTooltipSetSpell(self)
         PHD:AddTooltipLine("gcdMs: %i", spell.gcdMs)
         PHD:AddTooltipLine("maxCharges: %i", spell.maxCharges)
         PHD:AddTooltipLine("rechargeTimeMs: %i", spell.rechargeTimeMs)
+        PHD:AddTooltipLine("manaCost: " .. PHD:Dump(GetSpellPowerCost(spellId)))
     end
 
     GameTooltip:Show()
@@ -86,17 +87,29 @@ end
 
 -- returns the mana cost of a given spell
 function PHD:GetManaCost(spellId)
-    -- returns a collection of mana costs since different spells use different resources
-    local costs = GetSpellPowerCost(spellId)
-
-    if not costs[1] then
+    local cost = PHD:FindManaCost(spellId)
+    if not cost then
         return 0
     end
 
-    -- I think [1] is always mana
-    local manaCost = costs[1].cost
-    local manaCostPerSec = costs[1].costPerSec
+    local manaCost = cost.cost
+    local manaCostPerSec = cost.costPerSec
     return manaCost, manaCostPerSec
+end
+
+function PHD:FindManaCost(spellId)
+    -- returns a collection of mana costs since different spells use different resources
+    local spellCosts = GetSpellPowerCost(spellId)
+
+    -- traverse all spell cost definitions and look for mana
+    for index, def in pairs(spellCosts) do
+        local name = def["name"]
+        if name == "MANA" then
+            return spellCosts[index]
+        end
+    end
+
+    return nil
 end
 
 -- add a "divider" of sorts to the tooltip, for some visual structure
@@ -277,14 +290,14 @@ end
 
 if PHD.DEBUG then
     -- just a function to print a table, nice for debugging
-    local function dump(definition)
+    function PHD:Dump(definition)
         if type(definition) == 'table' then
             local s = '{ '
             for k, v in pairs(definition) do
                 if type(k) ~= 'number' then
                     k = '"' .. k .. '"'
                 end
-                s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
+                s = s .. '[' .. k .. '] = ' .. PHD:Dump(v) .. ','
             end
             return s .. '} '
         else
