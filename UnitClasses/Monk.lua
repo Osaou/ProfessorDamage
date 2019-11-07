@@ -152,3 +152,23 @@ function Vivify:Compute()
         aoeHpm = self:GetValPerMana(direct + mistAoe * PHD.AOE_AVERAGE_TARGETS)
     }
 end
+
+local RefreshingJadeWind = PHD.Spell:NewWithId(196725)
+function RefreshingJadeWind:Compute()
+    local heal, channelTimeSec, count, range = string.match(self.description, "Summon a whirling tornado around you, causing (%d[%d.,]*) healing over (%d[%d.,]*) sec to up to (%d+) allies within (%d+) yards")
+    if heal == nil or channelTimeSec == nil then
+        return
+    end
+
+    heal = PHD:StrToNumber(heal)
+    local channelTimeMs = PHD:StrToNumber(channelTimeSec) * 1000
+
+    return {
+        heal = heal,
+        hps = self:GetValPerSecond(heal, channelTimeMs),
+        hpsc = self:GetValPerSecondAccountForCooldown(heal, channelTimeMs),
+        aoeHps = self:GetValPerSecond(heal * PHD.AOE_AVERAGE_TARGETS, channelTimeMs),
+        aoeHpsc = self:GetValPerSecondAccountForCooldown(heal * PHD.AOE_AVERAGE_TARGETS, channelTimeMs),
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
