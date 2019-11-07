@@ -35,3 +35,38 @@ function EnvelopingMist:Compute()
         hpsc = PHD.IGNORE_STAT
     }
 end
+
+local RenewingMist = PHD.Spell:NewWithId(115151)
+function RenewingMist:Compute()
+    local healOverTime, durationSec = string.match(self.description, "restoring (%d[%d.,]*) health over (%d[%d.,]*) sec")
+    if healOverTime == nil then
+        return
+    end
+
+    local hot = PHD:StrToNumber(healOverTime)
+    local durationMs = PHD:StrToNumber(durationSec) * 1000
+
+    return {
+        heal = hot,
+        hot = hot,
+        hps = self:GetValPerSecond(hot, durationMs),
+        hpsc = PHD.IGNORE_STAT
+    }
+end
+
+local LifeCocoon = PHD.Spell:NewWithId(116849)
+function LifeCocoon:Compute()
+    local absorb = string.match(self.description, "absorbing (%d[%d.,]*) damage")
+    if absorb == nil then
+        return
+    end
+
+    absorb = PHD:StrToNumber(absorb)
+
+    return {
+        absorb = absorb,
+        hps = PHD.IGNORE_STAT, -- not affected by gcd
+        hpsc = self:GetValPerSecondAccountForCooldown(absorb),
+        hpm = self:GetValPerMana(absorb)
+    }
+end
