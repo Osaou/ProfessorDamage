@@ -103,3 +103,27 @@ function HealingRain:Compute()
         aoeHpm = self:GetValPerMana(hot * PHD.AOE_AVERAGE_TARGETS)
     }
 end
+
+local HealingTideTotem = PHD.Spell:NewWithId(108280)
+function HealingTideTotem:Compute()
+    local durationSec, tickIntervalSec, range, healTick = string.match(self.description, "at your feet for (%d[%d.,]*) sec, which pulses every (%d[%d.,]*) sec, healing all party or raid members within (%d+) yards for (%d[%d.,]*)")
+    if durationSec == nil or tickIntervalSec == nil or healTick == nil then
+        return
+    end
+
+    healTick = PHD:StrToNumber(healTick)
+    tickIntervalSec = PHD:StrToNumber(tickIntervalSec)
+    durationSec = PHD:StrToNumber(durationSec)
+
+    local heal = PHD:MathRound(durationSec / tickIntervalSec) * healTick
+    local durationMs = durationSec * 1000
+
+    return {
+        heal = heal,
+        hps = self:GetValPerSecond(heal, durationMs),
+        hpsc = self:GetValPerSecondAccountForCooldown(heal, durationMs),
+        aoeHps = self:GetValPerSecond(heal * PHD.AOE_AVERAGE_TARGETS, durationMs),
+        aoeHpsc = self:GetValPerSecondAccountForCooldown(heal * PHD.AOE_AVERAGE_TARGETS, durationMs),
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
