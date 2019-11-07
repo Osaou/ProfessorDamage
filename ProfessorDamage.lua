@@ -120,6 +120,10 @@ function PHD:StrToNumber(str)
     return tonumber(withoutComma);
 end
 
+function PHD:MathRound(f)
+    return math.floor(f + 0.5)
+end
+
 function PHD:IsStatComputed(stat)
     return stat and stat ~= PHD.IGNORE_STAT
 end

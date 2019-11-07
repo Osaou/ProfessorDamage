@@ -70,3 +70,29 @@ function LifeCocoon:Compute()
         hpm = self:GetValPerMana(absorb)
     }
 end
+
+local EssenceFont = PHD.Spell:NewWithId(191837)
+function EssenceFont:Compute()
+    local count, range, tickIntervalSec, channelTimeSec, tickHeal, tickHot = string.match(self.description, "healing bolts at up to (%d+) allies within (%d+) yds, every (%d[%d.,]*) sec for (%d[%d.,]*) sec. Each bolt heals a target for (%d[%d.,]*), plus an additional (%d[%d.,]*) over (%d[%d.,]*) sec")
+    if tickIntervalSec == nil or channelTimeSec == nil or tickHeal == nil or tickHot == nil then
+        return
+    end
+
+    local direct = PHD:StrToNumber(tickHeal)
+    local hot = PHD:StrToNumber(tickHot)
+    local tickIntervalMs = PHD:StrToNumber(tickIntervalSec) * 1000
+    local channelTimeMs = PHD:StrToNumber(channelTimeSec) * 1000
+
+    local tickCount = PHD:MathRound(channelTimeMs / tickIntervalMs)
+    local heal = tickCount * direct + hot
+
+    -- for now let's not care about that the hot will tick extra nor that there are many targets etc
+    return {
+        heal = heal,
+        hps = self:GetValPerSecond(heal, channelTimeMs),
+        hpsc = self:GetValPerSecondAccountForCooldown(heal, channelTimeMs),
+        aoeHps = self:GetValPerSecond(heal * PHD.AOE_AVERAGE_TARGETS, channelTimeMs),
+        aoeHpsc = self:GetValPerSecondAccountForCooldown(heal * PHD.AOE_AVERAGE_TARGETS, channelTimeMs),
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
