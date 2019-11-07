@@ -95,7 +95,8 @@ function PHD:GetManaCost(spellId)
 
     -- I think [1] is always mana
     local manaCost = costs[1].cost
-    return manaCost
+    local manaCostPerSec = costs[1].costPerSec
+    return manaCost, manaCostPerSec
 end
 
 -- add a "divider" of sorts to the tooltip, for some visual structure
@@ -149,7 +150,7 @@ function PHD.Spell:GetStats()
     local cooldownMs, gcdMs = GetSpellBaseCooldown(self.spellId)
     local currentCharges, maxCharges, lastRechargeStart, rechargeTimeSec, _ = GetSpellCharges(self.spellId)
     local rechargeTimeMs = (rechargeTimeSec or 0) * 1000
-    local manaCost = PHD:GetManaCost(self.spellId)
+    local manaCost, manaCostPerSec = PHD:GetManaCost(self.spellId)
 
     self.description = description
     self.castTimeMs = castTimeMs or 0
@@ -158,6 +159,7 @@ function PHD.Spell:GetStats()
     self.maxCharges = maxCharges or 0
     self.rechargeTimeMs = rechargeTimeMs
     self.manaCost = manaCost or 0
+    self.manaCostPerSec = manaCostPerSec or 0
 end
 
 -- returns "x per second" for some value, such as dps, hps
@@ -198,11 +200,20 @@ function PHD.Spell:_GetValPerSecond(val, channelingTimeMs, shouldAccountForCoold
 end
 
 -- returns "x per mana" for some value
-function PHD.Spell:GetValPerMana(val)
-    if self.manaCost <= 0 then
-        return nil
+function PHD.Spell:GetValPerMana(val, channelingTimeMs)
+    local manaCost = nil
+    if self.manaCost > 0 then
+        manaCost = self.manaCost
+    elseif self.manaCostPerSec > 0 and channelingTimeMs then
+        local channelingTimeSec = channelingTimeMs / 1000
+        manaCost = self.manaCostPerSec * math.ceil(channelingTimeSec)
     end
-    return val / self.manaCost
+
+    if manaCost then
+        return val / manaCost
+    end
+
+    return nil
 end
 
 -- triggers value computations to run for a given spell implementation and takes care of the result
@@ -222,7 +233,9 @@ function PHD.Spell:RunComputations()
     result.manaCost = self.manaCost
 
     if result.heal then
-        result.hpm = self:GetValPerMana(result.heal)
+        if not result.hpm then
+            result.hpm = self:GetValPerMana(result.heal)
+        end
 
         -- naively calculate hps, unless it's already provided
         if not result.hps then
@@ -237,7 +250,9 @@ function PHD.Spell:RunComputations()
     end
 
     if result.dmg then
-        result.dpm = self:GetValPerMana(result.dmg)
+        if not result.dpm then
+            result.dpm = self:GetValPerMana(result.dmg)
+        end
 
         -- naively calculate dps, unless it's already provided
         if not result.dps then
