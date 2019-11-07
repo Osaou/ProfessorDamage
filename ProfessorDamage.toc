@@ -11,3 +11,4 @@ UnitClasses\Druid.lua
 UnitClasses\Monk.lua
 UnitClasses\Paladin.lua
 UnitClasses\Priest.lua
+UnitClasses\Shaman.lua
