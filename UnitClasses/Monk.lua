@@ -96,3 +96,59 @@ function EssenceFont:Compute()
         aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
     }
 end
+
+local ChiBurst = PHD.Spell:NewWithId(123986)
+function ChiBurst:Compute()
+    local dmg, heal = string.match(self.description, "dealing (%d[%d.,]*) Nature damage to all enemies, and (%d[%d.,]*) healing")
+    if dmg == nil or heal == nil then
+        return
+    end
+
+    dmg = PHD:StrToNumber(dmg)
+    heal = PHD:StrToNumber(heal)
+
+    return {
+        dmg = dmg,
+        aoeDps = self:GetValPerSecond(dmg * PHD.AOE_AVERAGE_TARGETS),
+        aoeDpsc = self:GetValPerSecondAccountForCooldown(dmg * PHD.AOE_AVERAGE_TARGETS),
+        aoeDpm = self:GetValPerMana(dmg * PHD.AOE_AVERAGE_TARGETS),
+        heal = heal,
+        aoeHps = self:GetValPerSecond(heal * PHD.AOE_AVERAGE_TARGETS),
+        aoeHpsc = self:GetValPerSecondAccountForCooldown(heal * PHD.AOE_AVERAGE_TARGETS),
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
+
+local Revival = PHD.Spell:NewWithId(115310)
+function Revival:Compute()
+    local range, heal = string.match(self.description, "within (%d+) yards for (%d[%d.,]*)")
+    if heal == nil then
+        return
+    end
+
+    heal = PHD:StrToNumber(heal)
+
+    return {
+        heal = heal,
+        aoeHps = self:GetValPerSecond(heal * PHD.AOE_AVERAGE_TARGETS),
+        aoeHpsc = self:GetValPerSecondAccountForCooldown(heal * PHD.AOE_AVERAGE_TARGETS),
+        aoeHpm = self:GetValPerMana(heal * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
+
+local Vivify = PHD.Spell:NewWithId(116670)
+function Vivify:Compute()
+    local direct, mistAoe = string.match(self.description, "healing the target for (%d[%d.,]*) and all allies with your Renewing Mist active for (%d[%d.,]*)")
+    if direct == nil or mistAoe == nil then
+        return
+    end
+
+    direct = PHD:StrToNumber(direct)
+    mistAoe = PHD:StrToNumber(mistAoe)
+
+    return {
+        heal = direct + mistAoe,
+        aoeHps = self:GetValPerSecond(direct + mistAoe * PHD.AOE_AVERAGE_TARGETS),
+        aoeHpm = self:GetValPerMana(direct + mistAoe * PHD.AOE_AVERAGE_TARGETS)
+    }
+end
